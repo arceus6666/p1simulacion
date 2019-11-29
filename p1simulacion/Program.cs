@@ -33,10 +33,23 @@ namespace p1simulacion {
 
 		static int[] numeros = generate();
 
+		// cuadrados, productos
+		static double[,] seedsNC = new double[100, 2];
+		// lineal, multiplicativo
+		static double[,] seedsC = new double[100, 2];
+
 		static double U = 0.5;
 		static double sqrt = Math.Sqrt(1200);
-		static double[][] limitesX2 = { new double[] { 0.0649, 0.1036 }, new double[] { 0.0619, 0.108 }, new double[] { 0.0561, 0.1168 } };
-		static double[][] limitesZ = { new double[] { U - (1.64 / sqrt), U + (1.64 / sqrt) }, new double[] { U - (1.96 / sqrt), U + (1.96 / sqrt) }, new double[] { U - (2.58 / sqrt), U + (2.58 / sqrt) } };
+		static double[][] limitesX2 = {
+			new double[] { 0.0649, 0.1036 },
+			new double[] { 0.0619, 0.108 },
+			new double[] { 0.0561, 0.1168 }
+		};
+		static double[][] limitesZ = {
+			new double[] { U - (1.64 / sqrt), U + (1.64 / sqrt) },
+			new double[] { U - (1.96 / sqrt), U + (1.96 / sqrt) },
+			new double[] { U - (2.58 / sqrt), U + (2.58 / sqrt) }
+		};
 
 		static Random RND = new Random();
 
@@ -158,26 +171,7 @@ namespace p1simulacion {
 		//	return new double[] { U - (z / Math.Sqrt(1200)), U + (z / Math.Sqrt(1200)) };
 		//}
 
-		static void Main(string[] args) {
-
-			// cuadrados, productos
-			double[,] seedsNC = new double[100, 2];
-			// lineal, multiplicativo
-			double[,] seedsC = new double[100, 2];
-
-			int x0l = RND.Next(1, 10);
-			int x0m = RND.Next(1, 20);
-			int k = RND.Next(1, 10);
-			int g = RND.Next(1, 9);
-			int c = RND.Next(1, 10);
-			c -= c % 2 == 1 ? 0 : 1;
-			int ml = (int) Math.Pow(2, g);
-			int mm = RND.Next(1, 100);
-			int al = 1 + 4 * k;
-			int am = RND.Next(1, 20);
-			double xil = (al * x0l + c) % ml;
-			double xim = (am * x0m) % mm;
-			Console.WriteLine(xil + " " + al + " " + x0l + " " + c + " " + ml + " " + g + " " + k);
+		private static void generateSeedNC() {
 			for(int i = 0; i < 100; i++) {
 				/*******No Congruentes*******/
 				double n = RandomNumber();
@@ -200,43 +194,177 @@ namespace p1simulacion {
 				} else {
 					nns = "0." + nns.Substring(1, 4);
 				}
-
 				n = Double.Parse(ns);
 				nn = Double.Parse(nns);
-				seedsNC[i, 0] = n / 10000;
-				seedsNC[i, 1] = nn / 10000;
+				//Console.WriteLine(n);
+				seedsNC[i, 0] = n;
+				seedsNC[i, 1] = nn;
 				/****************************/
-
-				/*********Congruentes********/
-				seedsC[i, 0] = Math.Round(xil / (ml - 1), 4);
-				//Console.WriteLine(xil + " " + (xil / (ml - 1)) + " " + seedsC[i, 0]);
-				xil = (al * xil + c) % ml;
-
-				seedsC[i, 1] = Math.Round(xim / (mm - 1), 4);
-				xim = (am * xim) % mm;
-				/****************************/
-				//Console.WriteLine(i + " " + n);
-
 			}
 
+		}
+
+		private static void generateSeedC() {
+			int x0l = RND.Next(1, 10);
+			int x0m = RND.Next(1, 20);
+			int k = RND.Next(1, 10);
+			int g = RND.Next(1, 9);
+			int c = RND.Next(1, 10);
+			c -= c % 2 == 1 ? 0 : 1;
+			int ml = (int) Math.Pow(2, g);
+			int mm = RND.Next(1, 100);
+			int al = 1 + 4 * k;
+			int am = RND.Next(1, 20);
+			double xil = (al * x0l + c) % ml;
+			double xim = (am * x0m) % mm;
+			//Console.WriteLine(xil + " " + al + " " + x0l + " " + c + " " + ml + " " + g + " " + k);
+			for(int i = 0; i < 100; i++) {
+				/*********Congruentes********/
+				//Console.WriteLine(xil + " " + (xil / (ml - 1)) + " " + seedsC[i, 0]);
+				seedsC[i, 0] = Math.Round(xil / (ml - 1), 4);
+				seedsC[i, 1] = Math.Round(xim / (mm - 1), 4);
+				xil = (al * xil + c) % ml;
+				xim = (am * xim) % mm;
+				/****************************/
+			}
+		}
+
+		private static void pruebaSMV() {
+			double xc0 = media(seedsC, 0);
+			double xc1 = media(seedsC, 1);
+			double xnc0 = media(seedsNC, 0);
+			double xnc1 = media(seedsNC, 1);
+			double vc0 = varianza(seedsC, 0);
+			double vc1 = varianza(seedsC, 1);
+			double vnc0 = varianza(seedsNC, 0);
+			double vnc1 = varianza(seedsNC, 1);
+			double sc0 = operado(seedsC, 0).Sum();
+			double sc1 = operado(seedsC, 1).Sum();
+			double snc0 = operado(seedsNC, 0).Sum();
+			double snc1 = operado(seedsNC, 1).Sum();
+
+			switch(Console.ReadLine()) {
+				case "a":
+					double[] limm = limitesZ[0];
+					double[] limv = limitesX2[0];
+					bool[] ac = new bool[4];
+					ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[0];
+					ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[0];
+					ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[0];
+					ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[0];
+					if(ac[0]) {
+						Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
+						//Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios\n [" +
+						//  xc0 + " " + (xc0 > limm[0] && xc0 < limm[1]) + "] [" + vc0 + " " + (vc0 > limv[0] && vc0 < limv[1]) + "] [" + sc0 + " " + (sc0 < seriesX2[0]) + "]");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
+						//Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios\n [" +
+						//	xc0 + " " + (xc0 > limm[0] && xc0 < limm[1]) + "] [" + vc0 + " " + (vc0 > limv[0] && vc0 < limv[1]) + "] [" + sc0 + " " + (sc0 < seriesX2[0]) + "]");
+						//Console.WriteLine(limm[0] + " " + limm[1]);
+					}
+					if(ac[1]) {
+						Console.WriteLine("Se acepta Ho de la serie Productos Medios");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
+					}
+					if(ac[2]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
+					}
+					if(ac[3]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
+					}
+					break;
+				case "b":
+					limm = limitesZ[1];
+					limv = limitesX2[1];
+					ac = new bool[4];
+					ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[1];
+					ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[1];
+					ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[1];
+					ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[1];
+					if(ac[0]) {
+						Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
+					}
+					if(ac[1]) {
+						Console.WriteLine("Se acepta Ho de la serie Productos Medios");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
+					}
+					if(ac[2]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
+					}
+					if(ac[3]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
+					}
+					break;
+				case "c":
+					limm = limitesZ[2];
+					limv = limitesX2[2];
+					ac = new bool[4];
+					ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[2];
+					ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[2];
+					ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[2];
+					ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[2];
+					if(ac[0]) {
+						Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
+					}
+					if(ac[1]) {
+						Console.WriteLine("Se acepta Ho de la serie Productos Medios");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
+					}
+					if(ac[2]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
+					}
+					if(ac[3]) {
+						Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
+					} else {
+						Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
+					}
+					break;
+			}
+		}
+
+		static void Main(string[] args) {
+			//foreach(int i in numeros) {
+			//	Console.WriteLine(i);
+			//}
+			Console.WriteLine(numeros.Length);
+			generateSeedNC();
+			generateSeedC();
 			Console.WriteLine("*******Bienvenido********");
 			Console.WriteLine("Escoja la opción deseada:");
-			Console.WriteLine("\ta) Mostrar Series.");
-			Console.WriteLine("\tb) Prueba de Poker.");
-			Console.WriteLine("\tc) Prueba de Kolmogorov-Smirnov.");
-			Console.WriteLine("\td) Prueba de series, media y varianza.");
-			Console.WriteLine("\te) Salir.");
+			Console.WriteLine("\ta)\tMostrar Series.");
+			Console.WriteLine("\tb)\tPrueba de Poker.");
+			Console.WriteLine("\tc)\tPrueba de Kolmogorov-Smirnov.");
+			Console.WriteLine("\td)\tPrueba de series, media y varianza.");
+			Console.WriteLine("\te)\tGenerar series nuevamente.");
+			Console.WriteLine("\totro)\tSalir.");
 			Console.Write("Opción: ");
 			bool salir = false;
 			// Use a switch statement to do the math.
 			switch(Console.ReadLine()) {
 				case "a":
 					Console.WriteLine("Escoja la serie a mostrar:");
-					Console.WriteLine("\ta) Cuadrados Medios.");
-					Console.WriteLine("\tb) Productos Medios.");
-					Console.WriteLine("\tc) Congruencial Lineal.");
-					Console.WriteLine("\td) Congruencial Multiplicativo.");
-					Console.WriteLine("\totro) Volver.");
+					Console.WriteLine("\ta)\tCuadrados Medios.");
+					Console.WriteLine("\tb)\tProductos Medios.");
+					Console.WriteLine("\tc)\tCongruencial Lineal.");
+					Console.WriteLine("\td)\tCongruencial Multiplicativo.");
+					Console.WriteLine("\totro)\tVolver.");
 					Console.Write("Opción: ");
 					switch(Console.ReadLine()) {
 						case "a":
@@ -261,142 +389,41 @@ namespace p1simulacion {
 					break;
 				case "d":
 					Console.WriteLine("Escoja la confiabilidad deseada:");
-					Console.WriteLine("\ta) 90%.");
-					Console.WriteLine("\tb) 95%.");
-					Console.WriteLine("\tc) 99%.");
-					Console.WriteLine("\totro) Volver.");
+					Console.WriteLine("\ta)\t90%.");
+					Console.WriteLine("\tb)\t95%.");
+					Console.WriteLine("\tc)\t99%.");
+					Console.WriteLine("\totro)\tVolver.");
 					Console.Write("Opción: ");
-					double xc0 = media(seedsC, 0);
-					double xc1 = media(seedsC, 1);
-					double xnc0 = media(seedsNC, 0);
-					double xnc1 = media(seedsNC, 1);
-					double vc0 = varianza(seedsC, 0);
-					double vc1 = varianza(seedsC, 1);
-					double vnc0 = varianza(seedsNC, 0);
-					double vnc1 = varianza(seedsNC, 1);
-					double sc0 = operado(seedsC, 0).Sum();
-					double sc1 = operado(seedsC, 1).Sum();
-					double snc0 = operado(seedsNC, 0).Sum();
-					double snc1 = operado(seedsNC, 1).Sum();
-
-					switch(Console.ReadLine()) {
-						case "a":
-							double[] limm = limitesZ[0];
-							double[] limv = limitesX2[0];
-							bool[] ac = new bool[4];
-							ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[0];
-							ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[0];
-							ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[0];
-							ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[0];
-							if(ac[0]) {
-								Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-								//Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios\n [" +
-								//  xc0 + " " + (xc0 > limm[0] && xc0 < limm[1]) + "] [" + vc0 + " " + (vc0 > limv[0] && vc0 < limv[1]) + "] [" + sc0 + " " + (sc0 < seriesX2[0]) + "]");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-								//Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios\n [" +
-								//	xc0 + " " + (xc0 > limm[0] && xc0 < limm[1]) + "] [" + vc0 + " " + (vc0 > limv[0] && vc0 < limv[1]) + "] [" + sc0 + " " + (sc0 < seriesX2[0]) + "]");
-								//Console.WriteLine(limm[0] + " " + limm[1]);
-							}
-							if(ac[1]) {
-								Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-							}
-							if(ac[2]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-							}
-							if(ac[3]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-							}
-							break;
-						case "b":
-							limm = limitesZ[1];
-							limv = limitesX2[1];
-							ac = new bool[4];
-							ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[1];
-							ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[1];
-							ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[1];
-							ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[1];
-							if(ac[0]) {
-								Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-							}
-							if(ac[1]) {
-								Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-							}
-							if(ac[2]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-							}
-							if(ac[3]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-							}
-							break;
-						case "c":
-							limm = limitesZ[2];
-							limv = limitesX2[2];
-							ac = new bool[4];
-							ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[2];
-							ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[2];
-							ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[2];
-							ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[2];
-							if(ac[0]) {
-								Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-							}
-							if(ac[1]) {
-								Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-							}
-							if(ac[2]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-							}
-							if(ac[3]) {
-								Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-							} else {
-								Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-							}
-							break;
-					}
-
+					pruebaSMV();
+					
 					break;
 				case "e":
+					generateSeedC();
+					generateSeedNC();
+					break;
+				default:
 					salir = true;
 					break;
 			}
 			// Wait for the user to respond before closing.
 			while(!salir) {
 				Console.WriteLine("Escoja la opción deseada:");
-				Console.WriteLine("\ta) Mostrar Series.");
-				Console.WriteLine("\tb) Prueba de Poker.");
-				Console.WriteLine("\tc) Prueba de Kolmogorov-Smirnov.");
-				Console.WriteLine("\td) Prueba de series, media y varianza.");
-				Console.WriteLine("\te) Salir.");
+				Console.WriteLine("\ta)\tMostrar Series.");
+				Console.WriteLine("\tb)\tPrueba de Poker.");
+				Console.WriteLine("\tc)\tPrueba de Kolmogorov-Smirnov.");
+				Console.WriteLine("\td)\tPrueba de series, media y varianza.");
+				Console.WriteLine("\te)\tGenerar series nuevamente.");
+				Console.WriteLine("\totro)\tSalir.");
 				Console.Write("Opción: ");
 				// Use a switch statement to do the math.
 				switch(Console.ReadLine()) {
 					case "a":
 						Console.WriteLine("Escoja la serie a mostrar:");
-						Console.WriteLine("\ta) Cuadrados Medios.");
-						Console.WriteLine("\tb) Productos Medios.");
-						Console.WriteLine("\tc) Congruencial Lineal.");
-						Console.WriteLine("\td) Congruencial Multiplicativo.");
-						Console.WriteLine("\totro) Volver.");
+						Console.WriteLine("\ta)\tCuadrados Medios.");
+						Console.WriteLine("\tb)\tProductos Medios.");
+						Console.WriteLine("\tc)\tCongruencial Lineal.");
+						Console.WriteLine("\td)\tCongruencial Multiplicativo.");
+						Console.WriteLine("\totro)\tVolver.");
 						Console.Write("Opción: ");
 						switch(Console.ReadLine()) {
 							case "a":
@@ -421,122 +448,24 @@ namespace p1simulacion {
 						break;
 					case "d":
 						Console.WriteLine("Escoja la confiabilidad deseada:");
-						Console.WriteLine("\ta) 90%.");
-						Console.WriteLine("\tb) 95%.");
-						Console.WriteLine("\tc) 99%.");
-						Console.WriteLine("\totro) Volver.");
+						Console.WriteLine("\ta)\t90%.");
+						Console.WriteLine("\tb)\t95%.");
+						Console.WriteLine("\tc)\t99%.");
+						Console.WriteLine("\totro)\tVolver.");
 						Console.Write("Opción: ");
-						double xc0 = media(seedsC, 0);
-						double xc1 = media(seedsC, 1);
-						double xnc0 = media(seedsNC, 0);
-						double xnc1 = media(seedsNC, 1);
-						double vc0 = varianza(seedsC, 0);
-						double vc1 = varianza(seedsC, 1);
-						double vnc0 = varianza(seedsNC, 0);
-						double vnc1 = varianza(seedsNC, 1);
-						double sc0 = operado(seedsC, 0).Sum();
-						double sc1 = operado(seedsC, 1).Sum();
-						double snc0 = operado(seedsNC, 0).Sum();
-						double snc1 = operado(seedsNC, 1).Sum();
-
-						switch(Console.ReadLine()) {
-							case "a":
-								double[] limm = limitesZ[0];
-								double[] limv = limitesX2[0];
-								bool[] ac = new bool[4];
-								ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[0];
-								ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[0];
-								ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[0];
-								ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[0];
-								if(ac[0]) {
-									Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-								}
-								if(ac[1]) {
-									Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-								}
-								if(ac[2]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-								}
-								if(ac[3]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-								}
-								break;
-							case "b":
-								limm = limitesZ[1];
-								limv = limitesX2[1];
-								ac = new bool[4];
-								ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[1];
-								ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[1];
-								ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[1];
-								ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[1];
-								if(ac[0]) {
-									Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-								}
-								if(ac[1]) {
-									Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-								}
-								if(ac[2]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-								}
-								if(ac[3]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-								}
-								break;
-							case "c":
-								limm = limitesZ[2];
-								limv = limitesX2[2];
-								ac = new bool[4];
-								ac[0] = xc0 > limm[0] && xc0 < limm[1] && vc0 > limv[0] && vc0 < limv[1] && sc0 < seriesX2[2];
-								ac[1] = xc1 > limm[0] && xc1 < limm[1] && vc1 > limv[0] && vc1 < limv[1] && sc1 < seriesX2[2];
-								ac[2] = xnc0 > limm[0] && xnc0 < limm[1] && vnc0 > limv[0] && vnc0 < limv[1] && snc0 < seriesX2[2];
-								ac[3] = xnc1 > limm[0] && xnc1 < limm[1] && vnc1 > limv[0] && vnc1 < limv[1] && snc1 < seriesX2[2];
-								if(ac[0]) {
-									Console.WriteLine("Se acepta Ho de la serie Cuadrados Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Cuadrados Medios");
-								}
-								if(ac[1]) {
-									Console.WriteLine("Se acepta Ho de la serie Productos Medios");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Productos Medios");
-								}
-								if(ac[2]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Lineal");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Lineal");
-								}
-								if(ac[3]) {
-									Console.WriteLine("Se acepta Ho de la serie Congruencial Multiplicativo");
-								} else {
-									Console.WriteLine("Se rechaza Ho de la serie Congruencial Multiplicativo");
-								}
-								break;
-						}
-
+						pruebaSMV();
 						break;
 					case "e":
+						generateSeedC();
+						generateSeedNC();
+						break;
+					default:
 						salir = true;
 						break;
 				}
 			}
 			Console.WriteLine("Adios!");
-			System.Threading.Thread.Sleep(500);
+			System.Threading.Thread.Sleep(700);
 		}
 	}
 }
