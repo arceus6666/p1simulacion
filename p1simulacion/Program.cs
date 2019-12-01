@@ -56,7 +56,7 @@ namespace p1simulacion {
 		// TD, 1P, 2P, T, P
 		//static double[] poker4 = { 0.5040, 0.4320, 0.0270, 0.0360, 0, 0010 };
 		static double[] pokerFE = { 50.4, 43.2, 2.7, 3.6, 0.1 };
-		static double[] ksValue = { 0.122, 0.136, 0.163 };
+		static double[] ksValue = { 1.22 / 99, 1.36 / 99, 1.63 / 99 };
 
 		static Random RND = new Random();
 
@@ -864,22 +864,7 @@ namespace p1simulacion {
 			}
 		}
 
-		static void Main(string[] args) {
-			//foreach(int i in numeros) {
-			//	Console.WriteLine(i);
-			//}
-			//Console.WriteLine(numeros.Length);
-			fillZ();
-			//foreach(var pair in tableZ) {
-			//	Console.WriteLine(pair.Key + ": " + pair.Value);
-			//}
-			generateSeedNC();
-			generateSeedC();
-			Console.WriteLine("***************************");
-			Console.WriteLine("*       Bienvenido        *");
-			Console.WriteLine("* Simulación - Práctica 1 *");
-			Console.WriteLine("* Daniel Mendoza          *");
-			Console.WriteLine("***************************");
+		private static void exec() {
 			Console.WriteLine("Escoja la opción deseada:");
 			Console.WriteLine("\ta)\tMostrar Series.");
 			Console.WriteLine("\tb)\tPrueba de Poker.");
@@ -888,7 +873,6 @@ namespace p1simulacion {
 			Console.WriteLine("\te)\tGenerar series nuevamente.");
 			Console.WriteLine("\totro)\tSalir.");
 			Console.Write("Opción: ");
-			bool salir = false;
 			switch(Console.ReadLine()) {
 				case "a":
 					Console.WriteLine("Escoja la serie a mostrar:");
@@ -937,62 +921,86 @@ namespace p1simulacion {
 					salir = true;
 					break;
 			}
+			Console.WriteLine("\n");
+		}
+
+		static void exec2() {
+			Console.WriteLine("Escoja la opción deseada:");
+			Console.WriteLine("\ta)\tMostrar Series.");
+			Console.WriteLine("\tb)\tPrueba de Poker.");
+			Console.WriteLine("\tc)\tPrueba de Kolmogorov-Smirnov.");
+			Console.WriteLine("\td)\tPrueba de series, media y varianza.");
+			Console.WriteLine("\te)\tGenerar series nuevamente.");
+			Console.WriteLine("\totro)\tSalir.");
+			Console.Write("Opción: ");
+			switch(Console.ReadLine()) {
+				case "a":
+					Console.WriteLine("Escoja la serie a mostrar:");
+					Console.WriteLine("\ta)\tCuadrados Medios.");
+					Console.WriteLine("\tb)\tProductos Medios.");
+					Console.WriteLine("\tc)\tCongruencial Lineal.");
+					Console.WriteLine("\td)\tCongruencial Multiplicativo.");
+					Console.WriteLine("\totro)\tVolver.");
+					Console.Write("Opción: ");
+					mostrar();
+					break;
+				case "b":
+					Console.WriteLine("Escoja la confiabilidad deseada:");
+					Console.WriteLine("\ta)\t90%.");
+					Console.WriteLine("\tb)\t95%.");
+					Console.WriteLine("\tc)\t99%.");
+					Console.WriteLine("\totro)\tVolver.");
+					Console.Write("Opción: ");
+					pruebaPoker();
+					break;
+				case "c":
+					Console.WriteLine("Escoja la confiabilidad deseada:");
+					Console.WriteLine("\ta)\t90%.");
+					Console.WriteLine("\tb)\t95%.");
+					Console.WriteLine("\tc)\t99%.");
+					Console.WriteLine("\totro)\tVolver.");
+					Console.Write("Opción: ");
+					pruebaKS();
+					break;
+				case "d":
+					Console.WriteLine("Escoja la confiabilidad deseada:");
+					Console.WriteLine("\ta)\t90%.");
+					Console.WriteLine("\tb)\t95%.");
+					Console.WriteLine("\tc)\t99%.");
+					Console.WriteLine("\totro)\tVolver.");
+					Console.Write("Opción: ");
+					pruebaSMV();
+					break;
+				case "e":
+					generateSeedC();
+					generateSeedNC();
+					Console.WriteLine("Series generadas.");
+					break;
+				default:
+					salir = true;
+					break;
+			}
+		}
+		static bool salir = false;
+		static void Main(string[] args) {
+			//foreach(int i in numeros) {
+			//	Console.WriteLine(i);
+			//}
+			//Console.WriteLine(numeros.Length);
+			fillZ();
+			//foreach(var pair in tableZ) {
+			//	Console.WriteLine(pair.Key + ": " + pair.Value);
+			//}
+			generateSeedNC();
+			generateSeedC();
+			Console.WriteLine("***************************");
+			Console.WriteLine("*       Bienvenido        *");
+			Console.WriteLine("* Simulación - Práctica 1 *");
+			Console.WriteLine("* Daniel Mendoza          *");
+			Console.WriteLine("***************************\n");
+			exec();
 			while(!salir) {
-				Console.WriteLine("Escoja la opción deseada:");
-				Console.WriteLine("\ta)\tMostrar Series.");
-				Console.WriteLine("\tb)\tPrueba de Poker.");
-				Console.WriteLine("\tc)\tPrueba de Kolmogorov-Smirnov.");
-				Console.WriteLine("\td)\tPrueba de series, media y varianza.");
-				Console.WriteLine("\te)\tGenerar series nuevamente.");
-				Console.WriteLine("\totro)\tSalir.");
-				Console.Write("Opción: ");
-				switch(Console.ReadLine()) {
-					case "a":
-						Console.WriteLine("Escoja la serie a mostrar:");
-						Console.WriteLine("\ta)\tCuadrados Medios.");
-						Console.WriteLine("\tb)\tProductos Medios.");
-						Console.WriteLine("\tc)\tCongruencial Lineal.");
-						Console.WriteLine("\td)\tCongruencial Multiplicativo.");
-						Console.WriteLine("\totro)\tVolver.");
-						Console.Write("Opción: ");
-						mostrar();
-						break;
-					case "b":
-						Console.WriteLine("Escoja la confiabilidad deseada:");
-						Console.WriteLine("\ta)\t90%.");
-						Console.WriteLine("\tb)\t95%.");
-						Console.WriteLine("\tc)\t99%.");
-						Console.WriteLine("\totro)\tVolver.");
-						Console.Write("Opción: ");
-						pruebaPoker();
-						break;
-					case "c":
-						Console.WriteLine("Escoja la confiabilidad deseada:");
-						Console.WriteLine("\ta)\t90%.");
-						Console.WriteLine("\tb)\t95%.");
-						Console.WriteLine("\tc)\t99%.");
-						Console.WriteLine("\totro)\tVolver.");
-						Console.Write("Opción: ");
-						pruebaKS();
-						break;
-					case "d":
-						Console.WriteLine("Escoja la confiabilidad deseada:");
-						Console.WriteLine("\ta)\t90%.");
-						Console.WriteLine("\tb)\t95%.");
-						Console.WriteLine("\tc)\t99%.");
-						Console.WriteLine("\totro)\tVolver.");
-						Console.Write("Opción: ");
-						pruebaSMV();
-						break;
-					case "e":
-						generateSeedC();
-						generateSeedNC();
-						Console.WriteLine("Series generadas.");
-						break;
-					default:
-						salir = true;
-						break;
-				}
+				exec();
 			}
 			Console.WriteLine("Adios!");
 			System.Threading.Thread.Sleep(700);
